@@ -1,0 +1,63 @@
+venv/
+.tree.py
+.treeignore
+project_content.txt
+data/
+weights/
+# run 
+runs/
+tree.py
+# Các tập tin được biên dịch
+__pycache__/
+*.py[cod]
+
+# Phần mở rộng C
+*.so
+
+# Phân phối / đóng gói
+bin/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Nhật ký cài đặt
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Báo cáo kiểm tra đơn vị / độ phủ
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# Bản dịch
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
+# Rope
+.ropeproject
+
+# Django stuff:
+*.log
+*.pot
+
+# Tài liệu Sphinx
+docs/_build/.
+
+# Training model
+src/models/classification_model/
+src/models/yolov6/

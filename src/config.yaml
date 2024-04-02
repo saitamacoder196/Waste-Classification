@@ -1,0 +1,13 @@
+
+path: d:/Projects/WasteClassification/Source/WasteClassificationAndLitteringBehaviorDetection/data # dataset root dir
+train: images/train  # train images (relative to 'path')
+val: images/valid  # val images (relative to 'path')
+
+# Classes
+names:
+  0: biodegradable
+  1: cardboard
+  2: glass
+  3: metal
+  4: paper
+  5: plastic

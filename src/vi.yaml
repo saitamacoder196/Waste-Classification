@@ -1,0 +1,43 @@
+
+paint_bucket:
+  vi: 'Thùng sơn'
+  vi_no_accent: 'Thung son'
+plastic_bag:
+  vi: 'Túi nhựa'
+  vi_no_accent: 'Tui nhua'
+plastic_bottle:
+  vi: 'Chai nhựa'
+  vi_no_accent: 'Chai nhua'
+plastic_bottle_cap:
+  vi: 'Nắp chai nhựa'
+  vi_no_accent: 'Nap chai nhua'
+plastic_box:
+  vi: 'Hộp nhựa'
+  vi_no_accent: 'Hop nhua'
+plastic_cultery:
+  vi: 'Dao, nĩa, thìa nhựa'
+  vi_no_accent: 'Dao, nia, thia nhua'
+plastic_cup:
+  vi: 'Ly nhựa'
+  vi_no_accent: 'Ly nhua'
+plastic_cup_lid:
+  vi: 'Nắp ly nhựa'
+  vi_no_accent: 'Nap ly nhua'
+reuseable_paper:
+  vi: 'Giấy tái sử dụng'
+  vi_no_accent: 'Giay tai su dung'
+scrap_paper:
+  vi: 'Giấy thải'
+  vi_no_accent: 'Giay thai'
+scrap_plastic:
+  vi: 'Nhựa thải'
+  vi_no_accent: 'Nhua thai'
+snack_bag:
+  vi: 'Túi bánh'
+  vi_no_accent: 'Tui banh'
+stick:
+  vi: 'Que'
+  vi_no_accent: 'Que'
+straw:
+  vi: 'Ống hút'
+  vi_no_accent: 'Ong hut'
