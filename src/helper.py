@@ -33,8 +33,8 @@ def _translate_vietnamese_class_name(class_name):
     with open('vi.yaml', 'r', encoding='utf-8') as f:
         data = yaml.safe_load(f)
 
-    vi_class_name = data.get(class_name, class_name, "vi")
-    vi_class_name_no_accent = data.get(class_name, class_name, "vi_no_accent")
+    vi_class_name = data.get(class_name,{}).get("vi", remove_dash_from_class_name(class_name))
+    vi_class_name_no_accent = data.get(class_name,{}).get("vi_no_accent", remove_dash_from_class_name(class_name))
     return vi_class_name, vi_class_name_no_accent
 
 

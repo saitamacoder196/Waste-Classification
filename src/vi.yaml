@@ -41,3 +41,6 @@ stick:
 straw:
   vi: 'Ống hút'
   vi_no_accent: 'Ong hut'
+can:
+  vi: 'Lon'
+  vi_no_accent: 'Lon'
