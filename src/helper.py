@@ -1,10 +1,17 @@
+import os
 from ultralytics import YOLO
 import time
 import streamlit as st
 import cv2
 import yaml
+# from communication.arduino_serial_interface import control_servo, display_on_lcd
+from communication.arduino_serial_interface import control_servo, display_on_lcd
 import settings
 import threading
+from database_connection import conn
+from PIL import Image, ImageDraw
+
+last_open_time = (0, 0, 0)
 
 def sleep_and_clear_success():
     time.sleep(3)
@@ -14,6 +21,7 @@ def sleep_and_clear_success():
         st.session_state['non_recyclable_placeholder'].empty()
     if 'hazardous_placeholder' in st.session_state:
         st.session_state['hazardous_placeholder'].empty()
+    
 
 def load_model(model_path):
     model = YOLO(model_path)
@@ -35,10 +43,96 @@ def _translate_vietnamese_class_name(class_name):
 
     vi_class_name = data.get(class_name,{}).get("vi", remove_dash_from_class_name(class_name))
     vi_class_name_no_accent = data.get(class_name,{}).get("vi_no_accent", remove_dash_from_class_name(class_name))
+
     return vi_class_name, vi_class_name_no_accent
 
+def display_images_from_database():
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT id, image_path, top_left_x, top_left_y, bottom_right_x, bottom_right_y, label, timestamp, is_correct FROM detected_images ORDER BY timestamp DESC")
+        detected_images = cur.fetchall()
+        st.markdown("""
+            <style>
+                .btn-green { background-color: #008000; color: white; }
+                .btn-red { background-color: #FF0000; color: white; }
+            </style>
+        """, unsafe_allow_html=True)
+        
+        for (id, image_path, top_left_x, top_left_y, bottom_right_x, bottom_right_y, label, timestamp, is_correct) in detected_images:
+            st.sidebar.markdown(f"### {label}")
+            image = Image.open(image_path)
+            draw = ImageDraw.Draw(image)
+            draw.rectangle(((top_left_x, top_left_y), (bottom_right_x, bottom_right_y)), outline="green", width=3)
+            timestamp_str = timestamp.strftime("%Y-%m-%d %H:%M:%S")
+            st.sidebar.image(image, caption=timestamp_str, use_column_width=True)
+
+            if is_correct == True:
+                st.sidebar.markdown(f'<button class="btn-green" id="yes-{id}" disabled>Đúng</button>', unsafe_allow_html=True)
+            elif is_correct == False:
+                st.sidebar.markdown(f'<button class="btn-red" id="no-{id}" disabled>Sai</button>', unsafe_allow_html=True)
+            else:
+                if st.sidebar.markdown(f'<button class="btn-green" id="yes-{id}" disabled>Đúng</button>', unsafe_allow_html=True):
+                    cur.execute(f"UPDATE detected_images SET is_correct = True WHERE id = {id}")
+                    conn.commit()
+                if st.sidebar.markdown(f'<button class="btn-red" id="no-{id}" disabled>Sai</button>', unsafe_allow_html=True):
+                    cur.execute(f"UPDATE detected_images SET is_correct = False WHERE id = {id}")
+                    conn.commit()
+
+    except Exception as e:
+        st.write(f"An error occurred: {e}")
+        conn.rollback()
+
+def save_detected_image(cur, image_path, top_left_x, top_left_y, bottom_right_x, bottom_right_y, label):
+    # Tạo truy vấn SQL
+    query = """
+    INSERT INTO detected_images (image_path, top_left_x, top_left_y, bottom_right_x, bottom_right_y, label, is_correct, timestamp)
+    VALUES (%s, %s, %s, %s, %s, %s, NULL, CURRENT_TIMESTAMP)
+    """
+    # Thực hiện truy vấn
+    cur.execute(query, (image_path, top_left_x, top_left_y, bottom_right_x, bottom_right_y, label))
+    
+    
+def load_sidebar():
+    pass
+    # st.sidebar.empty()
+    # st.sidebar.title("Detected Images")
+    # if 'hazardous_placeholder' in st.session_state:
+    #     st.sidebar.markdown(st.session_state['hazardous_placeholder'])
+    # if 'non_recyclable_placeholder' in st.session_state:
+    #     st.sidebar.markdown(st.session_state['non_recyclable_placeholder'])
+    # if 'recyclable_placeholder' in st.session_state:
+    #     st.sidebar.markdown(st.session_state['recyclable_placeholder'])
+    # st.sidebar.title("Detected Images")
+    # display_images_from_database()
+
+# Hàm lưu trữ hình ảnh vào thư mục
+def save_image(result, file_name):
+    folder_path = 'detected/images'
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    file_path = os.path.join(folder_path, file_name)
+    cv2.imwrite(file_path, result.orig_img)
+
+    cur = conn.cursor()
+    bounding_boxes = result.boxes.xyxy.tolist()
+    name = result.names[int(result.boxes.cls[0])]
+    vi_name, vi_name_no_accent = _translate_vietnamese_class_name(name)
+    save_detected_image(cur, file_path, bounding_boxes[0][0], bounding_boxes[0][1], bounding_boxes[0][2], bounding_boxes[0][3], vi_name)
+    conn.commit()
+    load_sidebar()
+    return file_path
+
+def check_servo_status():
+    global last_open_time
+    while True:
+        for i in range(3):
+            if time.time() - last_open_time[i] > 2:
+                control_servo(i + 1, 'close')
+        time.sleep(1)
+        
 
 def _display_detected_frames(model, st_frame, image):
+
     image = cv2.resize(image, (640, int(640*(9/16))))
     
     if 'unique_classes' not in st.session_state:
@@ -69,7 +163,7 @@ def _display_detected_frames(model, st_frame, image):
             detected_items.update(st.session_state['unique_classes'])
 
             recyclable_items, non_recyclable_items, hazardous_items = classify_waste_type(detected_items)
-
+            file_name = f"{time.time()}.jpg"  # Tên tệp có thể được tùy chỉnh theo nhu cầu
             if recyclable_items:
                 # detected_items_str = "\n- ".join(remove_dash_from_class_name(item) for item in recyclable_items)
                 vietnamese_recyclable_items = [_translate_vietnamese_class_name(item) for item in recyclable_items]
@@ -82,7 +176,11 @@ def _display_detected_frames(model, st_frame, image):
                     f"<div class='stRecyclable'>Recyclable items:\n\n- {detected_items_str}</div>",
                     unsafe_allow_html=True
                 )
-            if non_recyclable_items:
+                save_image(result, file_name)
+                control_servo(1, 'open')  # Mở servo số 1
+                last_open_time[0] = time.time()
+                display_on_lcd(detected_items_str_no_accent)
+            elif non_recyclable_items:
                 # detected_items_str = "\n- ".join(remove_dash_from_class_name(item) for item in non_recyclable_items)
                 vietnamese_non_recyclable_items = [_translate_vietnamese_class_name(item) for item in non_recyclable_items]
                 vietnamese_accents = [item[0] for item in vietnamese_non_recyclable_items]
@@ -95,7 +193,12 @@ def _display_detected_frames(model, st_frame, image):
                     f"<div class='stNonRecyclable'>Non-Recyclable items:\n\n- {detected_items_str}</div>",
                     unsafe_allow_html=True
                 )
-            if hazardous_items:
+                save_image(result, file_name)
+                control_servo(2, 'open')  # Mở servo số 1
+                last_open_time[1] = time.time()
+                display_on_lcd(detected_items_str_no_accent)
+    # 
+            elif hazardous_items:
                 # detected_items_str = "\n- ".join(remove_dash_from_class_name(item) for item in hazardous_items)
                 vietnamese_hazardous_items = [_translate_vietnamese_class_name(item) for item in hazardous_items]
                 vietnamese_accents = [item[0] for item in vietnamese_hazardous_items]
@@ -108,7 +211,11 @@ def _display_detected_frames(model, st_frame, image):
                     f"<div class='stHazardous'>Hazardous items:\n\n- {detected_items_str}</div>",
                     unsafe_allow_html=True
                 )
-
+                
+                save_image(result, file_name)
+                control_servo(3, 'open')  # Mở servo số 1
+                last_open_time[2] = time.time()
+                display_on_lcd(detected_items_str_no_accent)
             threading.Thread(target=sleep_and_clear_success).start()
             st.session_state['last_detection_time'] = time.time()
 
@@ -132,8 +239,9 @@ def get_camera_devices():
 # Now you can use `selected_camera` as the index for `cv2.VideoCapture`.
 def play_webcam(model):
     camera_devices = get_camera_devices()
-    selected_camera = st.selectbox('Select a camera device:', camera_devices)
-    if st.button('Detect Objects'):
+    selected_camera = st.selectbox('Chọn thiết bị camera:', camera_devices)
+    # load_sidebar()
+    if st.button('Bắt đầu phát hiện'):
         try:
             vid_cap = cv2.VideoCapture(selected_camera)
             st_frame = st.empty()
@@ -148,4 +256,4 @@ def play_webcam(model):
                         vid_cap.release()
                         break
         except Exception as e:
-            st.sidebar.error("Error loading video: " + str(e))
+            st.sidebar.error("Lôi tải video: " + str(e))

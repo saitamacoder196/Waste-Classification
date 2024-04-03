@@ -1,19 +1,19 @@
 from pathlib import Path
-import cv2
 import streamlit as st
 import helper
 import settings
+import threading
 
 st.set_page_config(
-    page_title="Waste Detection",
+    page_title="Phân loại rác thông minh",
 )
 
 st.sidebar.title("Detect Console")
 
 model_path = Path(settings.DETECTION_MODEL)
 
-st.title("Intelligent waste segregation system")
-st.write("Start detecting objects in the webcam stream by clicking the button below. To stop the detection, click stop button in the top right corner of the webcam stream.")
+st.title("Hệ thống phân loại rác thông minh")
+st.write("Bắt đầu phát hiện các vật thể trong luồng webcam bằng cách nhấn nút bên dưới. Để dừng việc phát hiện, hãy nhấn nút dừng ở góc trên bên phải của luồng webcam.")
 st.markdown(
 """
 <style>
@@ -50,9 +50,11 @@ unsafe_allow_html=True
 try:
     model = helper.load_model(model_path)
 except Exception as ex:
-    st.error(f"Unable to load model. Check the specified path: {model_path}")
+    st.error(f"Không thể tải model. Kiểm tra đường dẫn đã chỉ định: {model_path}")
     st.error(ex)
-helper.play_webcam(model)
 
-st.sidebar.markdown("This is a demo of the waste detection model.", unsafe_allow_html=True)
+helper.play_webcam(model)
+t = threading.Thread(target=helper.check_servo_status)
+t.start()
+st.sidebar.markdown("Đây là một demo của mô hình phân loại rác.", unsafe_allow_html=True)
 

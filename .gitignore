@@ -3,6 +3,7 @@ venv/
 .treeignore
 project_content.txt
 data/
+src/detected/
 weights/
 # run 
 runs/
