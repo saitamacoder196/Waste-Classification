@@ -182,13 +182,14 @@ def _display_detected_frames(model, st_frame, image):
                 detected_items_str_no_accent = "\n- ".join(vietnamese_no_accents)
                 # st.session_state['recyclable_placeholder'].info(f"Recyclable items:\n\n- {detected_items_str}")
                 st.session_state['recyclable_placeholder'].markdown(
-                    f"<div class='stRecyclable'>Recyclable items:\n\n- {detected_items_str}</div>",
+                    f"<div class='stRecyclable'>Rác Tái Chế:\n\n- {detected_items_str}</div>",
                     unsafe_allow_html=True
                 )
                 save_image(result, file_name)
+                display_on_lcd(detected_items_str_no_accent)
                 control_servo(1, 'open')  # Mở servo số 1
                 last_open_time[0] = time.time()
-                display_on_lcd(detected_items_str_no_accent)
+                
             elif inorganic_items:
                 # detected_items_str = "\n- ".join(remove_dash_from_class_name(item) for item in inorganic_items)
                 vietnamese_inorganic_items = [_translate_vietnamese_class_name(item) for item in inorganic_items]
@@ -199,13 +200,14 @@ def _display_detected_frames(model, st_frame, image):
 
                 # st.session_state['inorganic_placeholder'].warning(f"Non-Recyclable items:\n\n- {detected_items_str}")
                 st.session_state['inorganic_placeholder'].markdown(
-                    f"<div class='stNonRecyclable'>Non-Recyclable items:\n\n- {detected_items_str}</div>",
+                    f"<div class='stNonRecyclable'>Rác Vô Cơ:\n\n- {detected_items_str}</div>",
                     unsafe_allow_html=True
                 )
                 save_image(result, file_name)
+                display_on_lcd(detected_items_str_no_accent)
                 control_servo(2, 'open')  # Mở servo số 1
                 last_open_time[1] = time.time()
-                display_on_lcd(detected_items_str_no_accent)
+                
     # 
             elif organic_items:
                 # detected_items_str = "\n- ".join(remove_dash_from_class_name(item) for item in organic_items)
@@ -217,14 +219,15 @@ def _display_detected_frames(model, st_frame, image):
                 
                 # st.session_state['organic_placeholder'].error(f"Hazardous items:\n\n- {detected_items_str}")
                 st.session_state['organic_placeholder'].markdown(
-                    f"<div class='stHazardous'>Hazardous items:\n\n- {detected_items_str}</div>",
+                    f"<div class='stHazardous'>Rác Hữu Cơ:\n\n- {detected_items_str}</div>",
                     unsafe_allow_html=True
                 )
                 
                 save_image(result, file_name)
+                display_on_lcd(detected_items_str_no_accent)
                 control_servo(3, 'open')  # Mở servo số 1
                 last_open_time[2] = time.time()
-                display_on_lcd(detected_items_str_no_accent)
+                
             threading.Thread(target=sleep_and_clear_success).start()
             st.session_state['last_detection_time'] = time.time()
 
