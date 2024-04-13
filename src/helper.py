@@ -136,7 +136,7 @@ def save_image(result, file_name):
 def control_when_detecting(servo_id, message_lcd):
     display_on_lcd(message_lcd)
     control_servo(servo_id, 'open')  # Mở servo số 1
-    servo_status[servo_id] = 'open'
+    servo_status[servo_id-1] = 'open'
     thread = threading.Thread(target=countdown, args=(servo_id,))
     thread.start()
 
@@ -145,7 +145,7 @@ def countdown(servo_id):
         time.sleep(2)
         display_on_lcd('')
         control_servo(servo_id, 'close')
-        servo_status[servo_id] = 'close'
+        servo_status[servo_id-1] = 'close'
 
 def _display_detected_frames(model, st_frame, image):
 
