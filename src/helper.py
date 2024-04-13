@@ -13,7 +13,7 @@ from database_connection import conn
 from PIL import Image, ImageDraw
 
 last_open_time = [0, 0, 0]
-
+is_detecting = False
 def sleep_and_clear_success():
     time.sleep(3)
     if 'recyclable_placeholder' in st.session_state:
@@ -137,8 +137,9 @@ def check_servo_status():
         for i in range(3):
             if (last_open_time[i] > 0) and (time.time() - last_open_time[i] > 2):
                 last_open_time[i] = 0
-                send_command("     ")
+                is_detecting = False
                 control_servo(i + 1, 'close')
+                send_command("Cho phan loai rac thai tu dong ...")
                 
         time.sleep(1)
         
@@ -192,7 +193,7 @@ def _display_detected_frames(model, st_frame, image):
                 display_on_lcd(detected_items_str_no_accent)
                 control_servo(1, 'open')  # Mở servo số 1
                 last_open_time[0] = time.time()
-                
+                is_detecting = True
             elif inorganic_items:
                 # detected_items_str = "\n- ".join(remove_dash_from_class_name(item) for item in inorganic_items)
                 vietnamese_inorganic_items = [_translate_vietnamese_class_name(item) for item in inorganic_items]
@@ -210,7 +211,7 @@ def _display_detected_frames(model, st_frame, image):
                 display_on_lcd(detected_items_str_no_accent)
                 control_servo(2, 'open')  # Mở servo số 1
                 last_open_time[1] = time.time()
-                
+                is_detecting = True
     # 
             elif organic_items:
                 # detected_items_str = "\n- ".join(remove_dash_from_class_name(item) for item in organic_items)
@@ -230,6 +231,7 @@ def _display_detected_frames(model, st_frame, image):
                 display_on_lcd(detected_items_str_no_accent)
                 control_servo(3, 'open')  # Mở servo số 1
                 last_open_time[2] = time.time()
+                is_detecting = True
                 
             threading.Thread(target=sleep_and_clear_success).start()
             st.session_state['last_detection_time'] = time.time()
@@ -264,7 +266,7 @@ def play_webcam(model):
             while (vid_cap.isOpened()):
                 success, image = vid_cap.read()
                 frame_count += 1  # Tăng biến đếm frames
-                if frame_count % 2 == 0:  # Chỉ xử lý mỗi 2 frames
+                if frame_count % 2 == 0 and not is_detecting:
                     if success:
                         _display_detected_frames(model, st_frame, image)
                     else:
