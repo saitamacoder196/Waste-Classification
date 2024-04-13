@@ -13,6 +13,7 @@ from database_connection import conn
 from PIL import Image, ImageDraw
 
 last_open_time = [0, 0, 0]
+servo_status = ['close', 'close', 'close']
 is_detecting = False
 def sleep_and_clear_success():
     time.sleep(3)
@@ -140,13 +141,20 @@ def save_image(result, file_name):
                 
 #         time.sleep(1)
         
-def countdown(servo_id, message_lcd):
+
+def control_when_detecting(servo_id, message_lcd):
     display_on_lcd(message_lcd)
     control_servo(servo_id, 'open')  # Mở servo số 1
-    time.sleep(2)
-    control_servo(servo_id, 'close')
-    send_command("Cho phan loai rac thai tu dong ...")
-    threading.currentThread().stop()
+    servo_status[servo_id] = 'open'
+    thread = threading.Thread(target=countdown, args=(servo_id,))
+    thread.start()
+
+def countdown(servo_id):
+    if servo_status[servo_id] == 'open':
+        time.sleep(2)
+        control_servo(servo_id, 'close')
+        threading.currentThread().stop()
+    
 
 
 
@@ -167,7 +175,6 @@ def _display_detected_frames(model, st_frame, image):
     if 'last_detection_time' not in st.session_state:
         st.session_state['last_detection_time'] = 0
 
-    # res = model.track(image, conf=0.6, persist=True, tracker='bytetrack.yaml')
     res = model.predict(image, conf=0.8)
     names = model.names
     detected_items = set()
@@ -199,8 +206,7 @@ def _display_detected_frames(model, st_frame, image):
                 save_image(result, file_name)
                 message_lcd = detected_items_str_no_accent
                 servo_id = 1
-                thread = threading.Thread(target=countdown, args=(servo_id, message_lcd))
-                thread.start()
+                control_when_detecting(servo_id, message_lcd)
             elif inorganic_items:
                 # detected_items_str = "\n- ".join(remove_dash_from_class_name(item) for item in inorganic_items)
                 vietnamese_inorganic_items = [_translate_vietnamese_class_name(item) for item in inorganic_items]
@@ -217,8 +223,7 @@ def _display_detected_frames(model, st_frame, image):
                 save_image(result, file_name)
                 message_lcd = detected_items_str_no_accent
                 servo_id = 2
-                thread = threading.Thread(target=countdown, args=(servo_id, message_lcd))
-                thread.start()
+                control_when_detecting(servo_id, message_lcd)
     # 
             elif organic_items:
                 # detected_items_str = "\n- ".join(remove_dash_from_class_name(item) for item in organic_items)
@@ -237,8 +242,7 @@ def _display_detected_frames(model, st_frame, image):
                 save_image(result, file_name)
                 message_lcd = detected_items_str_no_accent
                 servo_id = 3
-                thread = threading.Thread(target=countdown, args=(servo_id, message_lcd))
-                thread.start()
+                control_when_detecting(servo_id, message_lcd)
                 
             threading.Thread(target=sleep_and_clear_success).start()
             st.session_state['last_detection_time'] = time.time()
