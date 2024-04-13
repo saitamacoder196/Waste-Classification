@@ -62,6 +62,9 @@ WEBCAM_PATH = 1
 # NON_RECYCLABLE = ['túi nhựa','giấy phế liệu','que','cốc nhựa','túi snack','hộp nhựa','ống hút','nắp cốc nhựa','nhựa tái chế','tô giấy','đồ ăn nhựa','đồ nhựa','đũa nhựa']
 # HAZARDOUS = ['pin','hộp phun hóa chất','chai nhựa hóa chất','can nhựa hóa chất','bóng đèn','thùng sơn']
 
-RECYCLABLE = ['cardboard_box','can','plastic_bottle_cap','plastic_bottle','reuseable_paper']
-NON_RECYCLABLE = ['plastic_bag','scrap_paper','stick','plastic_cup','snack_bag','plastic_box','straw','plastic_cup_lid','scrap_plastic','cardboard_bowl','plastic_cultery']
-HAZARDOUS = ['battery','chemical_spray_can','chemical_plastic_bottle','chemical_plastic_gallon','light_bulb','paint_bucket']
+# RECYCLABLE = ['cardboard_box','can','plastic_bottle_cap','plastic_bottle','reuseable_paper']
+# NON_RECYCLABLE = ['plastic_bag','scrap_paper','stick','plastic_cup','snack_bag','plastic_box','straw','plastic_cup_lid','scrap_plastic','cardboard_bowl','plastic_cultery']
+# HAZARDOUS = ['battery','chemical_spray_can','chemical_plastic_bottle','chemical_plastic_gallon','light_bulb','paint_bucket']
+INORGANIC_WASTE =['Bóng Đèn', 'Bút Chì', 'Ống Hút', 'Túi Bánh', 'Túi Nhựa']
+ORGANIC_WASTE =  ['Bánh Mì', 'Quả Chuối', 'Quả Cam', 'Quả Táo', 'Quả Xoài', 'Vỏ Chuối']
+RECYCLABLE_WASTE = ['Chai Nhựa', 'Chai Thủy Tinh', 'Giấy Cuộn', 'Giấy Vụn', 'Lon Kim Loại']
