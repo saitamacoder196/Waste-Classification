@@ -137,8 +137,9 @@ def check_servo_status():
         for i in range(3):
             if (last_open_time[i] > 0) and (time.time() - last_open_time[i] > 2):
                 last_open_time[i] = 0
+                send_command("     ")
                 control_servo(i + 1, 'close')
-                send_command("")
+                
         time.sleep(1)
         
 
