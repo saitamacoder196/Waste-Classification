@@ -17,10 +17,10 @@ def sleep_and_clear_success():
     time.sleep(3)
     if 'recyclable_placeholder' in st.session_state:
         st.session_state['recyclable_placeholder'].empty()
-    if 'non_recyclable_placeholder' in st.session_state:
-        st.session_state['non_recyclable_placeholder'].empty()
-    if 'hazardous_placeholder' in st.session_state:
-        st.session_state['hazardous_placeholder'].empty()
+    if 'inorganic_placeholder' in st.session_state:
+        st.session_state['inorganic_placeholder'].empty()
+    if 'organic_placeholder' in st.session_state:
+        st.session_state['organic_placeholder'].empty()
     
 
 def load_model(model_path):
@@ -28,11 +28,10 @@ def load_model(model_path):
     return model
 
 def classify_waste_type(detected_items):
-    recyclable_items = set(detected_items) & set(settings.RECYCLABLE)
-    non_recyclable_items = set(detected_items) & set(settings.NON_RECYCLABLE)
-    hazardous_items = set(detected_items) & set(settings.HAZARDOUS)
-    
-    return recyclable_items, non_recyclable_items, hazardous_items
+    recyclable_items = set(detected_items) & set(settings.RECYCLABLE_WASTE)
+    inorganic_items = set(detected_items) & set(settings.INORGANIC_WASTE)
+    organic_items = set(detected_items) & set(settings.ORGANIC_WASTE)
+    return recyclable_items, inorganic_items, organic_items
 
 def remove_dash_from_class_name(class_name):
     return class_name.replace("_", " ")
@@ -96,10 +95,10 @@ def load_sidebar():
     pass
     # st.sidebar.empty()
     # st.sidebar.title("Detected Images")
-    # if 'hazardous_placeholder' in st.session_state:
-    #     st.sidebar.markdown(st.session_state['hazardous_placeholder'])
-    # if 'non_recyclable_placeholder' in st.session_state:
-    #     st.sidebar.markdown(st.session_state['non_recyclable_placeholder'])
+    # if 'organic_placeholder' in st.session_state:
+    #     st.sidebar.markdown(st.session_state['organic_placeholder'])
+    # if 'inorganic_placeholder' in st.session_state:
+    #     st.sidebar.markdown(st.session_state['inorganic_placeholder'])
     # if 'recyclable_placeholder' in st.session_state:
     #     st.sidebar.markdown(st.session_state['recyclable_placeholder'])
     # st.sidebar.title("Detected Images")
@@ -142,10 +141,10 @@ def _display_detected_frames(model, st_frame, image):
 
     if 'recyclable_placeholder' not in st.session_state:
         st.session_state['recyclable_placeholder'] = st.sidebar.empty()
-    if 'non_recyclable_placeholder' not in st.session_state:
-        st.session_state['non_recyclable_placeholder'] = st.sidebar.empty()
-    if 'hazardous_placeholder' not in st.session_state:
-        st.session_state['hazardous_placeholder'] = st.sidebar.empty()
+    if 'inorganic_placeholder' not in st.session_state:
+        st.session_state['inorganic_placeholder'] = st.sidebar.empty()
+    if 'organic_placeholder' not in st.session_state:
+        st.session_state['organic_placeholder'] = st.sidebar.empty()
 
     if 'last_detection_time' not in st.session_state:
         st.session_state['last_detection_time'] = 0
@@ -160,11 +159,11 @@ def _display_detected_frames(model, st_frame, image):
         if new_classes != st.session_state['unique_classes']:
             st.session_state['unique_classes'] = new_classes
             st.session_state['recyclable_placeholder'].markdown('')
-            st.session_state['non_recyclable_placeholder'].markdown('')
-            st.session_state['hazardous_placeholder'].markdown('')
+            st.session_state['inorganic_placeholder'].markdown('')
+            st.session_state['organic_placeholder'].markdown('')
             detected_items.update(st.session_state['unique_classes'])
 
-            recyclable_items, non_recyclable_items, hazardous_items = classify_waste_type(detected_items)
+            recyclable_items, inorganic_items, organic_items = classify_waste_type(detected_items)
             file_name = f"{time.time()}.jpg"  # Tên tệp có thể được tùy chỉnh theo nhu cầu
             if recyclable_items:
                 # detected_items_str = "\n- ".join(remove_dash_from_class_name(item) for item in recyclable_items)
@@ -182,16 +181,16 @@ def _display_detected_frames(model, st_frame, image):
                 control_servo(1, 'open')  # Mở servo số 1
                 last_open_time[0] = time.time()
                 display_on_lcd(detected_items_str_no_accent)
-            elif non_recyclable_items:
-                # detected_items_str = "\n- ".join(remove_dash_from_class_name(item) for item in non_recyclable_items)
-                vietnamese_non_recyclable_items = [_translate_vietnamese_class_name(item) for item in non_recyclable_items]
-                vietnamese_accents = [item[0] for item in vietnamese_non_recyclable_items]
-                vietnamese_no_accents = [item[1] for item in vietnamese_non_recyclable_items]
+            elif inorganic_items:
+                # detected_items_str = "\n- ".join(remove_dash_from_class_name(item) for item in inorganic_items)
+                vietnamese_inorganic_items = [_translate_vietnamese_class_name(item) for item in inorganic_items]
+                vietnamese_accents = [item[0] for item in vietnamese_inorganic_items]
+                vietnamese_no_accents = [item[1] for item in vietnamese_inorganic_items]
                 detected_items_str = "\n- ".join(vietnamese_accents)
                 detected_items_str_no_accent = "\n- ".join(vietnamese_no_accents)
 
-                # st.session_state['non_recyclable_placeholder'].warning(f"Non-Recyclable items:\n\n- {detected_items_str}")
-                st.session_state['non_recyclable_placeholder'].markdown(
+                # st.session_state['inorganic_placeholder'].warning(f"Non-Recyclable items:\n\n- {detected_items_str}")
+                st.session_state['inorganic_placeholder'].markdown(
                     f"<div class='stNonRecyclable'>Non-Recyclable items:\n\n- {detected_items_str}</div>",
                     unsafe_allow_html=True
                 )
@@ -200,16 +199,16 @@ def _display_detected_frames(model, st_frame, image):
                 last_open_time[1] = time.time()
                 display_on_lcd(detected_items_str_no_accent)
     # 
-            elif hazardous_items:
-                # detected_items_str = "\n- ".join(remove_dash_from_class_name(item) for item in hazardous_items)
-                vietnamese_hazardous_items = [_translate_vietnamese_class_name(item) for item in hazardous_items]
-                vietnamese_accents = [item[0] for item in vietnamese_hazardous_items]
-                vietnamese_no_accents = [item[1] for item in vietnamese_hazardous_items]
+            elif organic_items:
+                # detected_items_str = "\n- ".join(remove_dash_from_class_name(item) for item in organic_items)
+                vietnamese_organic_items = [_translate_vietnamese_class_name(item) for item in organic_items]
+                vietnamese_accents = [item[0] for item in vietnamese_organic_items]
+                vietnamese_no_accents = [item[1] for item in vietnamese_organic_items]
                 detected_items_str = "\n- ".join(vietnamese_accents)
                 detected_items_str_no_accent = "\n- ".join(vietnamese_no_accents)
                 
-                # st.session_state['hazardous_placeholder'].error(f"Hazardous items:\n\n- {detected_items_str}")
-                st.session_state['hazardous_placeholder'].markdown(
+                # st.session_state['organic_placeholder'].error(f"Hazardous items:\n\n- {detected_items_str}")
+                st.session_state['organic_placeholder'].markdown(
                     f"<div class='stHazardous'>Hazardous items:\n\n- {detected_items_str}</div>",
                     unsafe_allow_html=True
                 )
