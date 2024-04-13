@@ -146,7 +146,6 @@ def countdown(servo_id):
         display_on_lcd('')
         control_servo(servo_id, 'close')
         servo_status[servo_id] = 'close'
-        threading.currentThread().stop()
 
 def _display_detected_frames(model, st_frame, image):
 
