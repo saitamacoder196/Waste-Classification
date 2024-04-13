@@ -153,10 +153,8 @@ def countdown(servo_id):
     if servo_status[servo_id] == 'open':
         time.sleep(2)
         control_servo(servo_id, 'close')
+        servo_status[servo_id] = 'close'
         threading.currentThread().stop()
-    
-
-
 
 def _display_detected_frames(model, st_frame, image):
 
@@ -277,7 +275,7 @@ def play_webcam(model):
             while (vid_cap.isOpened()):
                 success, image = vid_cap.read()
                 frame_count += 1  # Tăng biến đếm frames
-                if frame_count % 2 == 0:
+                if frame_count % 2 == 0 and all(servo_status[i] == 'close' for i in range(3)):
                     if success:
                         _display_detected_frames(model, st_frame, image)
                     else:
