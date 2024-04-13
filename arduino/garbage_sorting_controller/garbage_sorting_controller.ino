@@ -3,9 +3,11 @@
 #include <Servo.h>
 
 #define GOC_DONG 0 // Góc đóng của servo
-#define GOC_MO 110 // Góc mở của servo
+#define GOC_MO 90// Góc mở của servo
 
 Waveshare_LCD1602 lcd(16, 2); // 16 characters and 2 lines of show
+
+int speech = 5;
 
 Servo servo1;
 Servo servo2;
@@ -21,7 +23,7 @@ void setup() {
 
     // Khởi tạo giao tiếp serial với tốc độ baud 9600
     Serial.begin(9600);
-    // Serial.setTimeout(1000);
+   //Serial.setTimeout(1000);
 
     // Gắn servo vào các chân
     servo1.attach(9);
@@ -47,6 +49,27 @@ void loop() {
     }
 }
 
+void open_servo(Servo servo){
+  for (int g = GOC_DONG; g <= GOC_MO; g ++) {
+    servo.write(g);
+  }
+}
+
+void close_servo(Servo servo){
+  for (int g = GOC_MO; g >= GOC_DONG; g--) {
+    delay(speech);
+    servo.write(g);
+  }
+}
+
+void handle_servo(Servo servo, int angle) {
+  if (angle == GOC_MO) {
+    open_servo(servo);
+  }
+  else{
+    close_servo(servo);
+  }
+}
 void controlServo(String command) {
     int servoNumber = command.charAt(6) - '0'; // Lấy số thứ tự của servo từ chuỗi
     String state = command.substring(8); // Lấy trạng thái từ chuỗi
@@ -54,14 +77,19 @@ void controlServo(String command) {
 
     switch (servoNumber) {
         case 1:
-            servo1.write(angle);
+            handle_servo(servo1, angle);
             break;
         case 2:
-            servo2.write(angle);
+            handle_servo(servo2, angle);
             break;
         case 3:
-            servo3.write(angle);
+            handle_servo(servo3, angle);
             break;
+        case 0:
+          servo1.write(angle);
+          servo2.write(angle);
+          servo3.write(angle);
+          break;
     }
 }
 
