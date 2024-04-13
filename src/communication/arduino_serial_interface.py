@@ -2,7 +2,7 @@ import serial
 import time
 
 # Thay thế 'COMx' bằng cổng COM mà Arduino của bạn được kết nối
-ser = serial.Serial('COM4', 9600, timeout=1)
+ser = serial.Serial('COM18', 9600, timeout=1)
 time.sleep(2) # Đợi cho Arduino reset sau khi mở cổng
 if ser.is_open == False:
         ser.open()

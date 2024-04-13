@@ -5,13 +5,13 @@ import streamlit as st
 import cv2
 import yaml
 # from communication.arduino_serial_interface import control_servo, display_on_lcd
-from communication.arduino_serial_interface import control_servo, display_on_lcd
+from communication.arduino_serial_interface import control_servo, display_on_lcd, send_command
 import settings
 import threading
 from database_connection import conn
 from PIL import Image, ImageDraw
 
-last_open_time = (0, 0, 0)
+last_open_time = [0, 0, 0]
 
 def sleep_and_clear_success():
     time.sleep(3)
@@ -126,8 +126,10 @@ def check_servo_status():
     global last_open_time
     while True:
         for i in range(3):
-            if time.time() - last_open_time[i] > 2:
+            if (last_open_time[i] > 0) and (time.time() - last_open_time[i] > 2):
+                last_open_time[i] = 0
                 control_servo(i + 1, 'close')
+                send_command("")
         time.sleep(1)
         
 
