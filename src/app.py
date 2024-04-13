@@ -54,7 +54,5 @@ except Exception as ex:
     st.error(ex)
 
 helper.play_webcam(model)
-t = threading.Thread(target=helper.check_servo_status)
-t.start()
 st.sidebar.markdown("Đây là một demo của mô hình phân loại rác.", unsafe_allow_html=True)
 

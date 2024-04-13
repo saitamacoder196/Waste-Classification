@@ -131,18 +131,24 @@ def save_image(result, file_name):
     load_sidebar()
     return file_path
 
-def check_servo_status():
-    global last_open_time
-    while True:
-        for i in range(3):
-            if (last_open_time[i] > 0) and (time.time() - last_open_time[i] > 2):
-                last_open_time[i] = 0
-                is_detecting = False
-                control_servo(i + 1, 'close')
-                send_command("Cho phan loai rac thai tu dong ...")
+# def check_servo_status():
+#     global last_open_time
+#     while True:
+#         for i in range(3):
+#             if (last_open_time[i] > 0) and (time.time() - last_open_time[i] > 2):
                 
-        time.sleep(1)
+                
+#         time.sleep(1)
         
+def countdown(servo_id, message_lcd):
+    display_on_lcd(message_lcd)
+    control_servo(servo_id, 'open')  # Mở servo số 1
+    time.sleep(2)
+    control_servo(servo_id, 'close')
+    send_command("Cho phan loai rac thai tu dong ...")
+    threading.currentThread().stop()
+
+
 
 def _display_detected_frames(model, st_frame, image):
 
@@ -189,11 +195,12 @@ def _display_detected_frames(model, st_frame, image):
                     f"<div class='stRecyclable'>Rác Tái Chế:\n\n- {detected_items_str}</div>",
                     unsafe_allow_html=True
                 )
+                
                 save_image(result, file_name)
-                display_on_lcd(detected_items_str_no_accent)
-                control_servo(1, 'open')  # Mở servo số 1
-                last_open_time[0] = time.time()
-                is_detecting = True
+                message_lcd = detected_items_str_no_accent
+                servo_id = 1
+                thread = threading.Thread(target=countdown, args=(servo_id, message_lcd))
+                thread.start()
             elif inorganic_items:
                 # detected_items_str = "\n- ".join(remove_dash_from_class_name(item) for item in inorganic_items)
                 vietnamese_inorganic_items = [_translate_vietnamese_class_name(item) for item in inorganic_items]
@@ -208,10 +215,10 @@ def _display_detected_frames(model, st_frame, image):
                     unsafe_allow_html=True
                 )
                 save_image(result, file_name)
-                display_on_lcd(detected_items_str_no_accent)
-                control_servo(2, 'open')  # Mở servo số 1
-                last_open_time[1] = time.time()
-                is_detecting = True
+                message_lcd = detected_items_str_no_accent
+                servo_id = 2
+                thread = threading.Thread(target=countdown, args=(servo_id, message_lcd))
+                thread.start()
     # 
             elif organic_items:
                 # detected_items_str = "\n- ".join(remove_dash_from_class_name(item) for item in organic_items)
@@ -228,10 +235,10 @@ def _display_detected_frames(model, st_frame, image):
                 )
                 
                 save_image(result, file_name)
-                display_on_lcd(detected_items_str_no_accent)
-                control_servo(3, 'open')  # Mở servo số 1
-                last_open_time[2] = time.time()
-                is_detecting = True
+                message_lcd = detected_items_str_no_accent
+                servo_id = 3
+                thread = threading.Thread(target=countdown, args=(servo_id, message_lcd))
+                thread.start()
                 
             threading.Thread(target=sleep_and_clear_success).start()
             st.session_state['last_detection_time'] = time.time()
@@ -266,7 +273,7 @@ def play_webcam(model):
             while (vid_cap.isOpened()):
                 success, image = vid_cap.read()
                 frame_count += 1  # Tăng biến đếm frames
-                if frame_count % 2 == 0 and not is_detecting:
+                if frame_count % 2 == 0:
                     if success:
                         _display_detected_frames(model, st_frame, image)
                     else:
