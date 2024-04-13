@@ -1,4 +1,5 @@
 import os
+import unicodedata
 from ultralytics import YOLO
 import time
 import streamlit as st
@@ -36,14 +37,23 @@ def classify_waste_type(detected_items):
 def remove_dash_from_class_name(class_name):
     return class_name.replace("_", " ")
 
+def remove_diacritics(text):
+    # Chuyển đổi các ký tự có dấu thành ký tự không dấu
+    text = unicodedata.normalize('NFD', text)
+    
+    # Loại bỏ các ký tự có dấu
+    result = ''.join(ch for ch in text if unicodedata.category(ch) != 'Mn')
+    
+    return result
+
 def _translate_vietnamese_class_name(class_name):
-    with open('vi.yaml', 'r', encoding='utf-8') as f:
-        data = yaml.safe_load(f)
+    # with open('vi.yaml', 'r', encoding='utf-8') as f:
+    #     data = yaml.safe_load(f)
 
-    vi_class_name = data.get(class_name,{}).get("vi", remove_dash_from_class_name(class_name))
-    vi_class_name_no_accent = data.get(class_name,{}).get("vi_no_accent", remove_dash_from_class_name(class_name))
+    # vi_class_name = data.get(class_name,{}).get("vi", remove_dash_from_class_name(class_name))
+    # vi_class_name_no_accent = data.get(class_name,{}).get("vi_no_accent", remove_dash_from_class_name(class_name))
 
-    return vi_class_name, vi_class_name_no_accent
+    return class_name, remove_diacritics(class_name)
 
 def display_images_from_database():
     try:
