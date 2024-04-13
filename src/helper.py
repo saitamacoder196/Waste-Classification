@@ -132,15 +132,6 @@ def save_image(result, file_name):
     load_sidebar()
     return file_path
 
-# def check_servo_status():
-#     global last_open_time
-#     while True:
-#         for i in range(3):
-#             if (last_open_time[i] > 0) and (time.time() - last_open_time[i] > 2):
-                
-                
-#         time.sleep(1)
-        
 
 def control_when_detecting(servo_id, message_lcd):
     display_on_lcd(message_lcd)
@@ -152,6 +143,7 @@ def control_when_detecting(servo_id, message_lcd):
 def countdown(servo_id):
     if servo_status[servo_id] == 'open':
         time.sleep(2)
+        display_on_lcd('')
         control_servo(servo_id, 'close')
         servo_status[servo_id] = 'close'
         threading.currentThread().stop()
@@ -275,7 +267,7 @@ def play_webcam(model):
             while (vid_cap.isOpened()):
                 success, image = vid_cap.read()
                 frame_count += 1  # Tăng biến đếm frames
-                if frame_count % 2 == 0 and all(servo_status[i] == 'close' for i in range(3)):
+                if frame_count % 2 == 0 and servo_status[0] == 'close' and servo_status[1] == 'close' and servo_status[2] == 'close':
                     if success:
                         _display_detected_frames(model, st_frame, image)
                     else:
