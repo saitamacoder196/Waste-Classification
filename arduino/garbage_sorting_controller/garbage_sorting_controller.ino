@@ -16,10 +16,15 @@ Servo servo3;
 void setup() {
     // initialize lcd
     lcd.init();
-    lcd.setCursor(0, 0);
-    lcd.send_string("Waveshare");
-    lcd.setCursor(0, 1);
-    lcd.send_string("Waiting...");
+    String upperText = "Phan loai";
+    String lowerText = "Rac thai";
+    int lenUText  = upperText.length();
+    int lenDText  = lowerText.length();
+    int maxPx = 16;
+    lcd.setCursor((maxPx - lenUText) / 2 + ((maxPx - lenUText) % 2), 0);
+    lcd.send_string(upperText.c_str());
+    lcd.setCursor((maxPx - lenDText) / 2 + ((maxPx - lenDText) % 2), 1);
+    lcd.send_string(lowerText.c_str());
 
     // Khởi tạo giao tiếp serial với tốc độ baud 9600
     Serial.begin(9600);
