@@ -166,7 +166,7 @@ def _display_detected_frames(model, st_frame, image):
     if 'last_detection_time' not in st.session_state:
         st.session_state['last_detection_time'] = 0
 
-    res = model.predict(image, conf=0.8)
+    res = model.predict(image, conf=0.73)
     names = model.names
     detected_items = set()
 
